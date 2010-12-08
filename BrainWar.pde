@@ -21,7 +21,7 @@ void setup() {
 }
 
 
-void process_input(byte b, int receiver) {
+void process_byte(byte b, int receiver) {
   state_type state = states[receiver];
   
   switch (state) {
@@ -77,22 +77,15 @@ void process_input(byte b, int receiver) {
 
 
 void loop() {
-  // read from port 1, send to port 0:
-  if (Serial1.available()>0) {
-    //int inByte = Serial1.read();
-    //Serial.print(inByte, BYTE); 
-    Serial.print("A["); 
-    Serial.print(Serial1.read());//,BYTE); 
-    Serial.print("]"); 
-
-  }
+  // to avoid flooding...
+  while(Serial1.available() or Serial2.available()) {
+    
+    if (Serial1.available())
+      process_byte(Serial1.read(),0);
   
-  if (Serial2.available()>0) {
-    //int inByte = Serial1.read();
-    //Serial.print(inByte, BYTE); 
-    Serial.print("B["); 
-    Serial.print(Serial2.read());//,BYTE); 
-    Serial.print("]");
+    if (Serial2.available())
+      process_byte(Serial2.read(),1);
+
   }
 
 }
