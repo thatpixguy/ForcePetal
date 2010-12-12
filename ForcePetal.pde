@@ -1,5 +1,3 @@
-import processing.opengl.*;
-
 import processing.serial.*;
 
 float scale;
