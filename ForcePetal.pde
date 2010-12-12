@@ -17,6 +17,9 @@ ArrayList serialLog;
 float attentionSum[];
 float meditationSum[];
 
+boolean fakeData;
+float lastFakeDataTime;
+
 void setup() {
   //scale = 0.5;
   scale = 0.8; // for my teenyweeny netbook
@@ -48,6 +51,9 @@ void setup() {
   
   smooth();
 
+  fakeData = false;
+  lastFakeDataTime = 0;
+
   println(Serial.list());
   try {
     port = new Serial(this,Serial.list()[1],9600);
@@ -57,8 +63,27 @@ void setup() {
   if (port!=null) port.bufferUntil(10);
 }
 
+void keyPressed() {
+  if (key=='f') {
+    fakeData^=true;
+  }
+}
+
+void generateFakeData() {
+  if(fakeData) {
+    float currentTime = millis();
+    if(lastFakeDataTime+500<currentTime) {
+      processData(0,(int)random(0,100),(int)random(0,100),0);
+      processData(1,(int)random(0,100),(int)random(0,100),0);
+      lastFakeDataTime=currentTime;
+    }
+  }
+}
+
 void draw() {
   scale(scale); // scale for my teenyweeny netbook
+
+  generateFakeData();
 
   //background(backgroundImage);
   image(backgroundImage,0,0);
@@ -76,7 +101,12 @@ void draw() {
   //f = meditationSum[0];
   f = 0.5;
   //image(meditationImage,-635*(1-f)+0*(f),342);
-  blend(meditationImage,0,0,meditationImage.width,meditationImage.height,int((-635*(1-f)+f)*scale),int(343*scale),int(meditationImage.width*scale),int(meditationImage.height*scale),LIGHTEST);
+  blend(meditationImage,
+    0,0,
+    meditationImage.width,meditationImage.height,
+    int((-635*(1-f)+f)*scale),int(343*scale),
+    int(meditationImage.width*scale),int(meditationImage.height*scale),
+    LIGHTEST);
   //blend(meditationImage,0,0,50,50,300,342,50,50,MULTIPLY);
 
   // 342
@@ -93,7 +123,7 @@ void draw() {
 
 void addToSerialLog(String s) {
   serialLog.add(s);
-  while (serialLog.size()>(height/g.textLeading)) {
+  while (serialLog.size()>(height/g.textLeading*scale)) {
     serialLog.remove(0);
   }  
   
