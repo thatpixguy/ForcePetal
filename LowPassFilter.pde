@@ -2,16 +2,21 @@ class LowPassFilter
 {
 
     float mCutoff;
-    float mLast;        
-    float mCurrent;
+    float mLastOutput;
+    float mLastInput;
+    float mCurrentOutput;
     float mLastMillis;
 
+    LowPassFilter(float cutoff, float v) {
+        mCutoff = cutoff;
+        mLastOutput = v;
+        mLastInput = v;
+        mCurrentOutput = v;
+    }
 
     LowPassFilter(float cutoff)
     {
-        mCutoff = cutoff;
-        mLast = 0.0f;
-        mCurrent= 0.0f;
+        this(cutoff,0.0f);
     }
 
     void setCutoff(float cutoff)
@@ -23,7 +28,10 @@ class LowPassFilter
     {
         float millis = millis();
         float timeSinceLastFrame = millis-mLastMillis;
-        mLast = mCurrent; 
+        if (timeSinceLastFrame<5) {
+          return mCurrentOutput;
+        }
+        mLastOutput = mCurrentOutput; 
         
         float sr = 1 / timeSinceLastFrame;
         float coef = mCutoff * TWO_PI / sr;
@@ -34,14 +42,15 @@ class LowPassFilter
 
         float feedback = 1 - coef;
        
-        mCurrent = (coef * v) + (feedback * mLast); 
+        mCurrentOutput = (coef * v) + (feedback * mLastOutput); 
+        mLastInput = v;
         mLastMillis = millis;
-        return mCurrent;
+        return mCurrentOutput;
     }
 
     float read()
     {
-        return mCurrent;
+      return write(mLastInput);
     }
         
 };
