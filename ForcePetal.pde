@@ -2,6 +2,8 @@ import processing.opengl.*;
 
 import processing.serial.*;
 
+float scale;
+
 Serial port;
 PFont font;
 
@@ -16,8 +18,10 @@ float attentionSum[];
 float meditationSum[];
 
 void setup() {
-  //size(1280,760); // for the real deal
-  size(1024,576,OPENGL); // for my teenyweeny netbook
+  //scale = 0.5;
+  scale = 0.8; // for my teenyweeny netbook
+  // scale = 1.0; // for the real deal
+  size(int(1280*scale),int(760*scale)); 
   background(0);
 
   font = loadFont("CenturyGothic-48.vlw");
@@ -45,13 +49,16 @@ void setup() {
   smooth();
 
   println(Serial.list());
-  port = new Serial(this,Serial.list()[1],9600);
+  try {
+    port = new Serial(this,Serial.list()[1],9600);
+  } catch ( Exception e ) {
+  }
 
-  port.bufferUntil(10);
+  if (port!=null) port.bufferUntil(10);
 }
 
 void draw() {
-  scale(0.8); // scale for my teenyweeny netbook
+  scale(scale); // scale for my teenyweeny netbook
 
   //background(backgroundImage);
   image(backgroundImage,0,0);
@@ -69,7 +76,7 @@ void draw() {
   //f = meditationSum[0];
   f = 0.5;
   //image(meditationImage,-635*(1-f)+0*(f),342);
-  blend(meditationImage,0,0,meditationImage.width,meditationImage.height,(int)((-635*(1-f)+f)*0.8),(int)(342*0.8),(int)(meditationImage.width*0.8),(int)(meditationImage.height*0.8),LIGHTEST);
+  blend(meditationImage,0,0,meditationImage.width,meditationImage.height,int((-635*(1-f)+f)*scale),int(343*scale),int(meditationImage.width*scale),int(meditationImage.height*scale),LIGHTEST);
   //blend(meditationImage,0,0,50,50,300,342,50,50,MULTIPLY);
 
   // 342
@@ -81,7 +88,7 @@ void draw() {
   image(meditationImage,645*f+1280*(1-f),342);
 
 
-  //image(backgroundMaskImage,0,0);
+  image(backgroundMaskImage,0,0);
 }
 
 void addToSerialLog(String s) {
