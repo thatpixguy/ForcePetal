@@ -21,8 +21,8 @@ boolean fakeData;
 float lastFakeDataTime;
 
 void setup() {
-  //scale = 0.5;
-  scale = 0.8; // for my teenyweeny netbook
+  scale = min(screen.width/1280.0,screen.height/760.0); // auto-scale
+  // scale = 0.8; // for my teenyweeny netbook
   // scale = 1.0; // for the real deal
   size(int(1280*scale),int(760*scale)); 
   background(0);
@@ -32,8 +32,6 @@ void setup() {
   
   //println(PFont.list());
   //textFont(createFont("PMingLiu",30,true));
-
-  //font = loadFont("PMingLiU-48.vlw");
   //font = loadFont("PMingLiU-48.vlw");
 
   textFont(font);
@@ -85,7 +83,6 @@ void draw() {
 
   generateFakeData();
 
-  //background(backgroundImage);
   image(backgroundImage,0,0);
 
   float f;
@@ -96,26 +93,37 @@ void draw() {
 
 
   f = attentionSum[0];
-  image(attentionImage,-635*(1-f)+0*(f),177);
+  blend(attentionImage,
+    0,0,
+    attentionImage.width,attentionImage.height,
+    int((-635*(1-f)+f)*scale),int(177*scale),
+    int(attentionImage.width*scale),int(attentionImage.height*scale),
+    LIGHTEST);
 
-  //f = meditationSum[0];
-  f = 0.5;
-  //image(meditationImage,-635*(1-f)+0*(f),342);
+
+  f = meditationSum[0];
   blend(meditationImage,
     0,0,
     meditationImage.width,meditationImage.height,
     int((-635*(1-f)+f)*scale),int(343*scale),
     int(meditationImage.width*scale),int(meditationImage.height*scale),
     LIGHTEST);
-  //blend(meditationImage,0,0,50,50,300,342,50,50,MULTIPLY);
-
-  // 342
 
   f = attentionSum[1];
-  image(attentionImage,645*f+1280*(1-f),177);
+  blend(attentionImage,
+    0,0,
+    attentionImage.width,attentionImage.height,
+    int((645*f+1280*(1-f))*scale),int(177*scale),
+    int(attentionImage.width*scale),int(attentionImage.height*scale),
+    LIGHTEST);
 
   f = meditationSum[1];
-  image(meditationImage,645*f+1280*(1-f),342);
+  blend(meditationImage,
+    0,0,
+    meditationImage.width,meditationImage.height,
+    int((645*f+1280*(1-f))*scale),int(343*scale),
+    int(meditationImage.width*scale),int(meditationImage.height*scale),
+    LIGHTEST);
 
 
   image(backgroundMaskImage,0,0);
@@ -127,7 +135,6 @@ void addToSerialLog(String s) {
     serialLog.remove(0);
   }  
   
-  //drawLog();
 }
 
 void drawSerialLog() {
@@ -165,23 +172,13 @@ void processData(int player, int attention, int meditation, int signal) {
 
   float factor;
 
-  //float attentionMax = 100;
-  
-  //TODO make use of these values to work out a factor for
-  // throttling the addtion of attention
-  
-  //attentionSum[player]+=attention/attentionMax
   factor = 1.0/(attentionAverage*frequency*targetTime);
   
-  //attentionSum[player]+=attention/(100.0*120*5);
   attentionSum[player]+=attention*factor;
 
   factor = 1.0/(meditationAverage*frequency*targetTime);
   
-  //meditationSum[player]+=meditation/(100.0*120*5);
   meditationSum[player]+=meditation*factor;
-  
-  //println(attentionSum[player]);
   
 }
 
