@@ -2,6 +2,10 @@ import processing.serial.*;
 
 float scale;
 
+boolean blink = true;
+
+boolean debug = false;
+
 Serial port;
 PFont font;
 
@@ -12,8 +16,12 @@ PImage attentionImage;
 
 ArrayList serialLog;
 
-float attentionSum[];
-float meditationSum[];
+LowPassFilter[] attentionSum = 
+  {new LowPassFilter(0.001), new LowPassFilter(0.001)};
+LowPassFilter[] meditationSum = 
+  {new LowPassFilter(0.001), new LowPassFilter(0.001)};
+
+LowPassFilter guide;
 
 boolean fakeData;
 float lastFakeDataTime;
@@ -23,6 +31,8 @@ void setup() {
   // scale = 0.8; // for my teenyweeny netbook
   // scale = 1.0; // for the real deal
   size(int(1280*scale),int(720*scale)); 
+
+  guide = new LowPassFilter(0.001);
 
   font = loadFont("CenturyGothic-48.vlw");
   textFont(font);
@@ -39,10 +49,6 @@ void setup() {
   backgroundMaskImage = loadImage("petal-background-with-holes.png");
   attentionImage = loadImage("green-goo.png");
   meditationImage = loadImage("red-goo.png");  
-
-
-  attentionSum = new float[2];
-  meditationSum = new float[2];
   
   smooth();
 
@@ -61,6 +67,8 @@ void setup() {
 void keyPressed() {
   if (key=='f') {
     fakeData^=true;
+  } else if (key=='d') {
+    debug^=true;
   }
 }
 
@@ -84,12 +92,13 @@ void draw() {
 
   float f;
 
+
   drawSerialLog();
   rectMode(CORNERS);
   noStroke();
 
 
-  f = constrain(attentionSum[0],0,1);
+  f = constrain(attentionSum[0].read(),0,1);
   blend(attentionImage,
     0,0,
     attentionImage.width,attentionImage.height,
@@ -98,7 +107,7 @@ void draw() {
     LIGHTEST);
 
 
-  f = constrain(meditationSum[0],0,1);
+  f = constrain(meditationSum[0].read(),0,1);
   blend(meditationImage,
     0,0,
     meditationImage.width,meditationImage.height,
@@ -106,7 +115,7 @@ void draw() {
     int(meditationImage.width*scale),int(meditationImage.height*scale),
     LIGHTEST);
 
-  f = constrain(attentionSum[1],0,1);
+  f = constrain(attentionSum[1].read(),0,1);
   blend(attentionImage,
     0,0,
     attentionImage.width,attentionImage.height,
@@ -114,7 +123,7 @@ void draw() {
     int(attentionImage.width*scale),int(attentionImage.height*scale),
     LIGHTEST);
 
-  f = constrain(meditationSum[1],0,1);
+  f = constrain(meditationSum[1].read(),0,1);
   blend(meditationImage,
     0,0,
     meditationImage.width,meditationImage.height,
@@ -124,6 +133,22 @@ void draw() {
 
 
   image(backgroundMaskImage,0,0);
+  
+  if (debug && (blink^=true)) {
+    noStroke();
+    fill(0,255,0);
+    rect(10,10,20,20);
+  }
+
+  if (debug) {
+  stroke(255,0,0);
+  float x = mouseX;
+  line(x,0,x,mouseY);
+  stroke(0,0,255);
+  x = guide.write(x);
+  line(x,mouseY,x,height);
+  }
+
 }
 
 void addToSerialLog(String s) {
@@ -135,6 +160,8 @@ void addToSerialLog(String s) {
 }
 
 void drawSerialLog() {
+  if (!debug) 
+    return;
   /*
   stroke(0x22);
   
@@ -171,11 +198,11 @@ void processData(int player, int attention, int meditation, int signal) {
 
   factor = 1.0/(attentionAverage*frequency*targetTime);
   
-  attentionSum[player]+=attention*factor;
+  attentionSum[player].write(attentionSum[player].mLastInput+attention*factor);
 
   factor = 1.0/(meditationAverage*frequency*targetTime);
   
-  meditationSum[player]+=meditation*factor;
+  meditationSum[player].write(meditationSum[player].mLastInput+meditation*factor);
   
 }
 

@@ -12,11 +12,15 @@ class LowPassFilter
         mLastOutput = v;
         mLastInput = v;
         mCurrentOutput = v;
+        mLastMillis = millis();
     }
 
-    LowPassFilter(float cutoff)
-    {
+    LowPassFilter(float cutoff) {
         this(cutoff,0.0f);
+    }
+    
+    LowPassFilter() {
+        this(1);
     }
 
     void setCutoff(float cutoff)
@@ -28,7 +32,7 @@ class LowPassFilter
     {
         float millis = millis();
         float timeSinceLastFrame = millis-mLastMillis;
-        if (timeSinceLastFrame<5) {
+        if (timeSinceLastFrame<30) {
           return mCurrentOutput;
         }
         mLastOutput = mCurrentOutput; 
