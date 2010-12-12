@@ -19,11 +19,10 @@ boolean fakeData;
 float lastFakeDataTime;
 
 void setup() {
-  scale = min(screen.width/1280.0,screen.height/760.0); // auto-scale
+  scale = min(screen.width/1280.0,screen.height/720.0); // auto-scale
   // scale = 0.8; // for my teenyweeny netbook
   // scale = 1.0; // for the real deal
-  size(int(1280*scale),int(760*scale)); 
-  background(0);
+  size(int(1280*scale),int(720*scale)); 
 
   font = loadFont("CenturyGothic-48.vlw");
   textFont(font);
@@ -90,7 +89,7 @@ void draw() {
   noStroke();
 
 
-  f = attentionSum[0];
+  f = constrain(attentionSum[0],0,1);
   blend(attentionImage,
     0,0,
     attentionImage.width,attentionImage.height,
@@ -99,15 +98,15 @@ void draw() {
     LIGHTEST);
 
 
-  f = meditationSum[0];
+  f = constrain(meditationSum[0],0,1);
   blend(meditationImage,
     0,0,
     meditationImage.width,meditationImage.height,
-    int((-635*(1-f)+f)*scale),int(343*scale),
+    int((-635*(1-f)+f)*scale),int(342*scale),
     int(meditationImage.width*scale),int(meditationImage.height*scale),
     LIGHTEST);
 
-  f = attentionSum[1];
+  f = constrain(attentionSum[1],0,1);
   blend(attentionImage,
     0,0,
     attentionImage.width,attentionImage.height,
@@ -115,11 +114,11 @@ void draw() {
     int(attentionImage.width*scale),int(attentionImage.height*scale),
     LIGHTEST);
 
-  f = meditationSum[1];
+  f = constrain(meditationSum[1],0,1);
   blend(meditationImage,
     0,0,
     meditationImage.width,meditationImage.height,
-    int((645*f+1280*(1-f))*scale),int(343*scale),
+    int((645*f+1280*(1-f))*scale),int(342*scale),
     int(meditationImage.width*scale),int(meditationImage.height*scale),
     LIGHTEST);
 
