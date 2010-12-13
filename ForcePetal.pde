@@ -9,6 +9,8 @@ boolean blink = true;
 
 boolean debug = false;
 
+int winner;
+
 Serial port;
 PFont font;
 
@@ -17,15 +19,9 @@ PImage backgroundMaskImage;
 PImage meditationImage;
 PImage attentionImage;
 
-PImage[] attentionBubbles =
-  { loadImage("green-bubble-small.png"),
-    loadImage("green-bubble-medium.png"),
-    loadImage("green-bubble-bug.png") };
+PImage[] attentionBubbles = new PImage[3];
   
-PImage[] meditationBubbles =
-  { loadImage("red-bubble-small.png"),
-    loadImage("red-bubble-medium.png"),
-    loadImage("red-bubble-bug.png") };
+PImage[] meditationBubbles = new PImage[3];
 
 
 ArrayList serialLog;
@@ -40,6 +36,7 @@ LowPassFilter guide;
 boolean fakeData;
 float lastFakeDataTime;
 
+
 void setup() {
   scale = min(screen.width/1280.0,screen.height/720.0); // auto-scale
   // scale = 0.8; // for my teenyweeny netbook
@@ -53,7 +50,7 @@ void setup() {
   guide = new LowPassFilter(0.001);
 
   font = loadFont("HelveticaNeue-Medium-76.vlw");
-  textFont(font,24);
+  textFont(font,48);
   
   serialLog = new ArrayList();
   
@@ -62,6 +59,14 @@ void setup() {
   attentionImage = loadImage("green-goo.png");
   meditationImage = loadImage("red-goo.png");  
   
+  attentionBubbles[0] = loadImage("green-bubble-small.png");
+  attentionBubbles[1] = loadImage("green-bubble-medium.png");
+  attentionBubbles[2] = loadImage("green-bubble-big.png");
+
+  meditationBubbles[0] = loadImage("red-bubble-small.png");
+  meditationBubbles[1] = loadImage("red-bubble-medium.png");
+  meditationBubbles[2] = loadImage("red-bubble-big.png");
+
   smooth();
 
   fakeData = false;
@@ -87,8 +92,13 @@ void setState(State s) {
       attentionSum[i].set(0);
       meditationSum[i].set(0);
     }
+    winner = -1;
   } else if(s==State.GO) {
   } else if(s==State.TEST) {
+  } else if(s==State.FINISH) {
+    if (winner>=0) {
+      port.write(winner);
+    }
   }
 }
 
@@ -97,6 +107,16 @@ void keyPressed() {
     fakeData^=true;
   } else if (key=='d') {
     debug^=true;
+  } else if (key=='r') {
+    setState(State.READY);
+  } else if (key=='s') {
+    setState(State.SET);
+  } else if (key=='g') {
+    setState(State.GO);
+  } else if (key=='t') {
+    setState(State.TEST);
+  } else if (key=='i') {
+    setState(State.IDLE);
   }
 }
 
@@ -111,13 +131,22 @@ void generateFakeData() {
   }
 }
 
-void centerText(String s) {
+void centerText(String s,float x, float y) {
   float w = textWidth(s);
-  text(s,(width-w)/2,height/2);
+  text(s,x-(w/2.0),y);
 }
 
 void draw() {
   scale(scale); // scale for my teenyweeny netbook
+
+  if(state == State.GO) {
+    for(int i=0;i<2;++i) {
+      if(attentionSum[i].read()>=1 && meditationSum[i].read()>=1) {
+        winner = i;
+	setState(State.FINISH);
+      }
+    }
+  }
 
   generateFakeData();
 
@@ -164,21 +193,35 @@ void draw() {
     int(meditationImage.width*scale),int(meditationImage.height*scale),
     LIGHTEST);
 
-
   image(backgroundMaskImage,0,0);
-  
  
+  if(state == State.FINISH) {
+    fill(255);
+    centerText("WINNER!!!",(winner*640)+320,160);
+  } else if (state == State.READY) {
+    fill(255);
+    centerText("READY?",640,360);
+  } else if (state == State.SET) {
+    fill(255);
+    centerText("GET SET...",640,360);
+  } else if (state == State.GO) {
+    fill(255);
+    centerText("GO!!!",640,360);
+    //XXX only show for a few seconds!
+  }
   
   if (debug) {
     if (fakeData) {
       fill(255,255,0);
-      centerText("fake data is fake");
+      centerText("fake data is fake",1280/2,720/2.0);
     }
     if (blink^=true) {
       noStroke();
       fill(0,255,0);
       rect(10,10,20,20);
     }
+    fill(255);
+    centerText(""+mouseX+","+mouseY,mouseX,mouseY);
   }
 
   if (debug) {
@@ -227,6 +270,10 @@ void processData(int player, int attention, int meditation, int signal) {
   //println("meditation: "+meditation);
   //println("signal: "+signal);
   if (signal>100) {
+    return;
+  }
+
+  if (!(state==State.TEST || state==State.GO)) {
     return;
   }
   
