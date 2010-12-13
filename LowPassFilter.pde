@@ -56,5 +56,11 @@ class LowPassFilter
     {
       return write(mLastInput);
     }
+    
+    float set(float v) {
+      mCurrentOutput = v;
+      mLastInput = v;
+      return v;
+    }
         
 };

@@ -14,6 +14,11 @@ void setup() {
     buffer[receiver][0]=0;
   }
 
+  pinMode(8,OUTPUT);
+  digitalWrite(8,LOW);
+  pinMode(9,OUTPUT);
+  digitalWrite(9,LOW);
+
 }
 
 
@@ -33,6 +38,19 @@ void process_byte(byte b, int receiver) {
 
 
 void loop() {
+  if(Serial.available()) {
+    char b = Serial.read();
+    if (b=='0') {
+      digitalWrite(8,HIGH);
+      delay(500);
+      digitalWrite(8,LOW);
+    }
+    if (b=='1') {
+      digitalWrite(9,HIGH);
+      delay(500);
+      digitalWrite(9,LOW);
+    }
+  }
   // to avoid flooding...
   while(Serial1.available() or Serial2.available()) {
     

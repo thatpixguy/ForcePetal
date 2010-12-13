@@ -1,5 +1,8 @@
 import processing.serial.*;
 
+
+State state;
+
 float scale;
 
 boolean blink = true;
@@ -13,6 +16,17 @@ PImage backgroundImage;
 PImage backgroundMaskImage;
 PImage meditationImage;
 PImage attentionImage;
+
+PImage[] attentionBubbles =
+  { loadImage("green-bubble-small.png"),
+    loadImage("green-bubble-medium.png"),
+    loadImage("green-bubble-bug.png") };
+  
+PImage[] meditationBubbles =
+  { loadImage("red-bubble-small.png"),
+    loadImage("red-bubble-medium.png"),
+    loadImage("red-bubble-bug.png") };
+
 
 ArrayList serialLog;
 
@@ -32,17 +46,15 @@ void setup() {
   // scale = 1.0; // for the real deal
   size(int(1280*scale),int(720*scale)); 
 
+  noCursor();
+
+  setState(State.SET);
+
   guide = new LowPassFilter(0.001);
 
-  font = loadFont("CenturyGothic-48.vlw");
-  textFont(font);
+  font = loadFont("HelveticaNeue-Medium-76.vlw");
+  textFont(font,24);
   
-  //println(PFont.list());
-  //textFont(createFont("PMingLiu",30,true));
-  //font = loadFont("PMingLiU-48.vlw");
-
-  textFont(font);
-
   serialLog = new ArrayList();
   
   backgroundImage = loadImage("petal-background.png");
@@ -64,6 +76,22 @@ void setup() {
   if (port!=null) port.bufferUntil(10);
 }
 
+void setState(State s) {
+  // leaving state actions
+  
+  state = s;
+  
+  // entering state actions
+  if (s==State.SET) {
+    for(int i=0;i<2;++i) {
+      attentionSum[i].set(0);
+      meditationSum[i].set(0);
+    }
+  } else if(s==State.GO) {
+  } else if(s==State.TEST) {
+  }
+}
+
 void keyPressed() {
   if (key=='f') {
     fakeData^=true;
@@ -81,6 +109,11 @@ void generateFakeData() {
       lastFakeDataTime=currentTime;
     }
   }
+}
+
+void centerText(String s) {
+  float w = textWidth(s);
+  text(s,(width-w)/2,height/2);
 }
 
 void draw() {
@@ -134,10 +167,18 @@ void draw() {
 
   image(backgroundMaskImage,0,0);
   
-  if (debug && (blink^=true)) {
-    noStroke();
-    fill(0,255,0);
-    rect(10,10,20,20);
+ 
+  
+  if (debug) {
+    if (fakeData) {
+      fill(255,255,0);
+      centerText("fake data is fake");
+    }
+    if (blink^=true) {
+      noStroke();
+      fill(0,255,0);
+      rect(10,10,20,20);
+    }
   }
 
   if (debug) {

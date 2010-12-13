@@ -1,0 +1,13 @@
+what to do when someone hits full?
+	constrain
+
+bubble effect
+
+tell arduino to trigger cannon
+
+hard switch on valve trigger (on -ve line)
+
+follow hard switch by armed light to +ve
+
+
+
